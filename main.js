@@ -8,32 +8,33 @@ const schedule = require("node-schedule"); //定时器任务库
 //配置项
 
 //纪念日
-let startDay = "2016/6/24";
+let startDay = "2018/3/21";
 //当地拼音,需要在下面的墨迹天气url确认
-const local = "zhejiang/hangzhou";
+const local = "chaoyang-district";
 
 //发送者邮箱厂家
-let EmianService = "126";
+let EmianService = "qq";
 //发送者邮箱账户SMTP授权码
 let EamilAuth = {
-  user: "xxx@126.com",
-  pass: "xxxx"
+  user: "675363017@qq.com",
+  pass: "adrdqzfipjsibchh"
 };
 //发送者昵称与邮箱地址
-let EmailFrom = '"vince" <xxxxx@126.com>';
+let EmailFrom = '"yyj" <675363017@qq.com>';
 
 //接收者邮箱地
-let EmailTo = "xxxxx@qq.com";
+let EmailTo = ["yingyuanjun@k2data.com.cn", "675363017@qq.com"];
 //邮件主题
 let EmailSubject = "一封暖暖的小邮件";
 
-//每日发送时间
-let EmailHour = 5;
-let EmialMinminute= 20;
+//每日发送时间, 镜像中时间比实际时间晚8小时
+const exitTime = 8
+let EmailHour = exitTime - 8;
+let EmialMinminute= 23;
 
 // 爬取数据的url
 const OneUrl = "http://wufazhuce.com/";
-const WeatherUrl = "https://tianqi.moji.com/weather/china/" + local;
+const WeatherUrl = "https://tianqi.moji.com/weather/china/beijing/" + local;
 
 
 // 获取ONE内容
@@ -139,28 +140,29 @@ function sendMail(HtmlData) {
       fs.readFileSync(path.resolve(__dirname, "email.ejs"), "utf8")
     );
     const html = template(HtmlData);
-  
+
     let transporter = nodemailer.createTransport({
       service: EmianService,
       port: 465,
       secureConnection: true,
       auth: EamilAuth
     });
-  
-    let mailOptions = {
-      from: EmailFrom,
-      to: EmailTo,
-      subject: EmailSubject,
-      html: html
-    };
-    transporter.sendMail(mailOptions, (error, info={}) => {
-      if (error) {
-        console.log(error);
-        sendMail(HtmlData); //再次发送
-      }
-      console.log("邮件发送成功", info.messageId);
-      console.log("静等下一次发送");
-    });
+    EmailTo.forEach(emailTo => {
+      let mailOptions = {
+        from: EmailFrom,
+        to: emailTo,
+        subject: EmailSubject,
+        html: html
+      };
+      transporter.sendMail(mailOptions, (error, info={}) => {
+        if (error) {
+          console.log(error);
+          sendMail(HtmlData); //再次发送
+        }
+        console.log(`${emailTo}邮件发送成功`, info.messageId);
+        console.log("静等下一次发送");
+      });
+    })
   }
 
 // 聚合
@@ -168,7 +170,6 @@ function getAllDataAndSendMail(){
     let HtmlData = {};
     // how long with
     let today = new Date();
-    console.log(today)
     let initDay = new Date(startDay);
     let lastDay = Math.floor((today - initDay) / 1000 / 60 / 60 / 24);
     let todaystr =
@@ -197,8 +198,8 @@ let rule = new schedule.RecurrenceRule();
 rule.dayOfWeek = [0, new schedule.Range(1, 6)];
 rule.hour = EmailHour;
 rule.minute = EmialMinminute;
-console.log('NodeMail: 开始等待目标时刻...')
+console.log(`等待${EmailHour + 8}:${EmialMinminute}开始发送邮件`)
 let j = schedule.scheduleJob(rule, function() {
-  console.log("执行任务");
+  console.log('发送邮件');
   getAllDataAndSendMail();
 });
