@@ -1,0 +1,15 @@
+name: "Start Send Mail"
+
+on:
+  push:
+  # schedule:
+  #   - cron: "0 21 * * *"
+
+jobs:
+  bot:
+    runs-on: node-latest
+    steps:
+      - name: "install"
+        run: npm install
+      - name: "start"
+        run: npm start
