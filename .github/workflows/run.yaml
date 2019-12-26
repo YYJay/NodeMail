@@ -3,7 +3,7 @@ name: "Start Send Mail"
 on:
   # push:
   schedule:
-    - cron: "5 6 * * *"
+    - cron: "15 6 * * *"
 
 jobs:
   start:
